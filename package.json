@@ -3,9 +3,6 @@
   "bugs": {
     "url": "https://github.com/lunasec-io/lunasec/issues"
   },
-  "dependencies": {
-    "lerna": "^4.0.0"
-  },
   "description": "This monorepo holds the LunaSec SDKs, servers, and demo application.",
   "devDependencies": {
     "@jest/globals": "^27.4.2",
@@ -13,7 +10,7 @@
     "@typescript-eslint/parser": "^5.6.0",
     "@vue/eslint-config-prettier": "^6.0.0",
     "@vue/eslint-config-typescript": "^9.1.0",
-    "eslint": "^8.4.1",
+    "eslint": "8.25.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-config-standard": "^16.0.2",
     "eslint-plugin-comments": "^1.0.0",
@@ -25,7 +22,9 @@
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-promise": "^5.2.0",
     "eslint-plugin-react": "^7.27.1",
+    "eslint-plugin-unused-imports": "^2.0.0",
     "eslint-plugin-vue": "^8.2.0",
+    "graphqurl": "~1.0.1",
     "husky": "^7.0.4",
     "js-yaml": "^4.1.0",
     "lerna": "^4.0.0",
@@ -33,8 +32,22 @@
     "prettier": "^2.5.0",
     "rimraf": "^3.0.2",
     "tslint-config-prettier": "^1.18.0",
-    "typescript": "^4.4.2",
+    "typescript": "~4.5.2",
     "uuid": "^8.3.2"
+  },
+  "dependenciesMeta": {
+    "@aws-cdk/aws-lambda-nodejs": {
+      "unplugged": true
+    },
+    "apollo@2.33.9": {
+      "unplugged": true
+    },
+    "eslint@8.5.0": {
+      "unplugged": true
+    },
+    "mst-gql@0.14.1": {
+      "unplugged": true
+    }
   },
   "homepage": "https://github.com/lunasec-io/lunasec#readme",
   "license": "Apache-2.0",
@@ -45,46 +58,73 @@
     "url": "git+https://github.com/lunasec-io/lunasec.git"
   },
   "scripts": {
-    "lunasec": "node js/sdks/packages/cli/build/cli.js",
+    "compile:bsl": "cd lunatrace/bsl && yarn run tsc -b tsconfig.build.json",
+    "lunasec": "node lunadefend/js/sdks/packages/cli/build/cli.js",
     "license:check": "./tools/license-checker/run-license-check.sh check",
     "license:fix": "./tools/license-checker/run-license-check.sh fix",
     "license:install": "cd tools/license-checker && ./install-skywalking-eyes.sh",
-    "test:e2e:local": "cd js/demo-apps/packages/react-front-end && yarn run test:e2e",
-    "test:e2e:docker": "cd js/demo-apps/packages/react-front-end && yarn run test:e2e:docker",
-    "test:unit:tokenizer": "cd js/sdks/packages/tokenizer-sdk && yarn run test",
-    "test:unit:auth": "cd js/sdks/packages/browser-common && yarn run test",
+    "test:e2e:local": "cd lunadefend/js/demo-apps/packages/react-front-end && yarn run test:e2e",
+    "test:e2e:docker": "cd lunadefend/js/demo-apps/packages/react-front-end && yarn run test:e2e:docker",
+    "test:unit:tokenizer": "cd lunadefend/js/sdks/packages/tokenizer-sdk && yarn run test",
+    "test:unit:auth": "cd lunadefend/js/sdks/packages/browser-common && yarn run test",
     "test:unit:js": "yarn test:unit:auth && yarn test:unit:tokenizer",
-    "test:unit:go": "cd go && go test -cover ./...",
+    "test:unit:go": "cd lunadefend/go && go test -cover ./...",
     "test:unit": "yarn test:unit:js && yarn test:unit:go",
     "test:all": "yarn test:unit && yarn run test:e2e:local",
     "lint:fix": "yarn run lint --fix",
-    "lint": "yarn run eslint --ext .js,.jsx,.ts,.tsx,.vue .",
+    "lint": "yarn run lint:basecommand .",
+    "lint:basecommand": "yarn run eslint --ext .js,.jsx,.ts,.tsx,.vue --quiet ./lunatrace",
+    "lint:lunatrace": "yarn run lint:basecommand ./lunatrace",
     "version:release": "./tools/version-release.sh",
-    "compile:dev:infrastructure": "cd js/internal-infrastructure/s3-redirect-generator && yarn run compile",
-    "compile:dev:sdks": "cd js/sdks && yarn run compile:dev",
-    "compile:release:sdks": "cd js/sdks && yarn run compile:release",
-    "compile:release:services": "cd go && yarn run compile:release",
-    "compile:release:demos": "VERSION=$(yarn run --silent monorepo:version) js/docker/release.sh build",
+    "compile:dev:infrastructure": "cd lunadefend/js/internal-infrastructure/s3-redirect-generator && yarn run compile",
+    "compile:dev:sdks": "cd lunadefend/js/sdks && yarn run compile:dev",
+    "compile:release:sdks": "cd lunadefend/js/sdks && yarn run compile:release",
+    "compile:release:services": "cd lunadefend/go && yarn run compile:release",
+    "compile:release:demos": "VERSION=$(yarn run --silent monorepo:version) lunadefend/js/docker/release.sh build",
     "compile:release": "yarn run compile:release:sdks && yarn run compile:release:services && yarn run compile:release:demos",
-    "postinstall": "./tools/postinstall.sh",
+    "postinstall": "sh ./tools/postinstall.sh",
     "publish:release:sdks": "lerna publish --no-verify-access -y from-package",
     "publish:release:services": "cd go && yarn run publish:release",
-    "publish:release:demos": "VERSION=$(yarn run --silent monorepo:version) js/docker/release.sh publish",
+    "publish:release:demos": "VERSION=$(yarn run --silent monorepo:version) lunadefend/js/docker/release.sh publish",
     "publish:release": "yarn run publish:release:sdks && yarn run publish:release:services && yarn run publish:release:demos",
     "prepare": "yarn run husky install",
-    "monorepo:version": "yarn node -p 'require(\"./lerna.json\").version'"
+    "monorepo:version": "yarn node -p 'require(\"./lerna.json\").version'",
+    "generate:lunatrace:backend": "cd lunatrace/bsl/backend && yarn generate",
+    "generate:lunatrace:frontend": "cd lunatrace/bsl/frontend && yarn generate",
+    "generate:go": "go generate ./...",
+    "generate": "yarn generate:go && yarn generate:lunatrace:backend && yarn generate:lunatrace:frontend"
+  },
+  "engines": {
+    "node": "^16.0.0"
   },
   "version": "1.0.0",
   "workspaces": {
     "packages": [
       "./go",
-      "./js/sdks/packages/*",
-      "./js/service/packages/*",
-      "./js/demo-apps/packages/*",
+      "./lunadefend/js/sdks/packages/*",
+      "./lunadefend/js/service/packages/*",
+      "./lunadefend/js/demo-apps/packages/*",
       "./docs",
-      "./js/sdks",
-      "./js/internal-infrastructure/s3-redirect-generator"
+      "./lunadefend/js/sdks",
+      "./lunatrace/bsl/backend",
+      "./lunadefend/js/internal-infrastructure/s3-redirect-generator",
+      "./lunadefend/js/internal-infrastructure/metrics-server-backend",
+      "./lunatrace/bsl/backend",
+      "./lunatrace/bsl/backend-cdk",
+      "./lunatrace/bsl/common",
+      "./lunatrace/bsl/logger",
+      "./lunatrace/bsl/frontend",
+      "./lunatrace/dev-cli",
+      "./lunatrace/datadog-metrics-proxy"
     ]
   },
-  "packageManager": "yarn@3.1.1"
+  "packageManager": "yarn@3.2.2",
+  "dependencies": {
+    "jest-environment-jsdom": "~28.0.2",
+    "jsonp": "~0.2.1",
+    "node-gyp": "~9.0.0"
+  },
+  "resolutions": {
+    "snyk-nodejs-lockfile-parser": "portal:/home/forrest/code/nodejs-lockfile-parser"
+  }
 }

@@ -1,0 +1,93 @@
+table:
+  name: manifests
+  schema: public
+object_relationships:
+  - name: build
+    using:
+      foreign_key_constraint_on: build_id
+  - name: project
+    using:
+      foreign_key_constraint_on: project_id
+insert_permissions:
+  - role: service
+    permission:
+      check: {}
+      columns:
+        - filename
+        - message
+        - s3_key
+        - s3_url
+        - status
+        - created_at
+        - build_id
+        - id
+        - project_id
+  - role: user
+    permission:
+      check:
+        project:
+          organization:
+            organization_users:
+              user:
+                kratos_id:
+                  _eq: X-Hasura-User-Id
+      columns:
+        - created_at
+        - filename
+        - id
+        - project_id
+        - s3_key
+        - s3_url
+select_permissions:
+  - role: service
+    permission:
+      columns:
+        - filename
+        - message
+        - s3_key
+        - s3_url
+        - status
+        - created_at
+        - build_id
+        - id
+        - project_id
+      filter: {}
+  - role: user
+    permission:
+      columns:
+        - filename
+        - message
+        - s3_key
+        - s3_url
+        - status
+        - created_at
+        - build_id
+        - id
+        - project_id
+      filter:
+        project:
+          organization:
+            organization_users:
+              user:
+                kratos_id:
+                  _eq: X-Hasura-User-Id
+update_permissions:
+  - role: service
+    permission:
+      columns:
+        - filename
+        - message
+        - s3_key
+        - s3_url
+        - status
+        - created_at
+        - build_id
+        - id
+        - project_id
+      filter: {}
+      check: null
+delete_permissions:
+  - role: service
+    permission:
+      backend_only: false
+      filter: {}

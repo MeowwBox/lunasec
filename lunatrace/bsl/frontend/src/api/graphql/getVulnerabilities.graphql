@@ -1,0 +1,52 @@
+query SearchVulnerabilities($search: String!, $source: String_comparison_exp = {_ilike: ""}, $order_by: [vulnerability_order_by!] = {}, $limit: Int!) {
+  vulnerability(
+    where: {
+      _and: [
+        {affected: {id: {_is_null: false}}},
+        {source: $source},
+        {
+          _or: [
+            {source_id: {_ilike: $search}},
+            {summary: {_ilike: $search}},
+            {affected: {package: {name: {_ilike: $search}}}}
+          ]
+        }
+      ]
+    },
+    limit: $limit,
+    order_by: $order_by
+  ) {
+    affected {
+      database_specific
+      ecosystem_specific
+      id
+      package {
+        name
+        id
+      }
+      affected_range_events {
+        database_specific
+        event
+        id
+        type
+        version
+      }
+    }
+    database_specific
+    details
+    severities {
+      id
+      score
+      source
+      type
+    }
+    source
+    source_id
+    summary
+    withdrawn
+    published
+    modified
+    severity_name
+    id
+  }
+}

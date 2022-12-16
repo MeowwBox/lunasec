@@ -1,0 +1,182 @@
+- id: "ory:lunatrace:hasura:graphql"
+  upstream:
+    preserve_host: true
+    url: $OATHKEEPER_HASURA_URL
+  match:
+    url: "$OATHKEEPER_MATCH_URL/v1/graphql"
+    methods:
+      - POST
+  authenticators:
+    - handler: cookie_session
+    - handler: anonymous # If the above cookie ins't found or fails, "Subject" becomes "Anonymous" in the below claims
+  authorizer:
+    handler: allow
+
+  mutators:
+    - handler: hydrator
+      config:
+        api:
+          url: $OATHKEEPER_BACKEND_URL/internal/auth/hydrate-user-id
+    - handler: id_token
+      config:
+        issuer_url: http://oathkeeper:4455/
+        # x-hasura-access-token below is a hack to bypass a weird hasura requirement
+        # x-hasura-user-id is the kratos user id from the table "identities", this can be impersonated
+        # x-hasura-real-user-id is the ID from "users" table that we created.  This is resolved from the hydrator above.
+        #   Impersonated users will have their real user id also overridden.
+        claims: |
+          {
+            "https://hasura.io/jwt/claims": {
+              "x-hasura-user-id": "{{ or .Extra.impersonate_user_id .Subject }}",
+              "x-hasura-real-user-id": "{{ .Extra.real_user_id }}", 
+              "x-hasura-access-token": "2883ad68-4940-461b-83f7-844b0604bb8c",  
+              "x-hasura-allowed-roles": ["user"],
+              "x-hasura-default-role": "user"
+            }
+          }
+- id: "ory:lunatrace:hasura:graphql:cli"
+  upstream:
+    preserve_host: true
+    url: $OATHKEEPER_HASURA_URL
+    strip_path: "/api/cli"
+  match:
+    url: "$OATHKEEPER_MATCH_URL/api/cli/v1/graphql"
+    methods:
+      - POST
+  authenticators:
+    - handler: bearer_token
+      config:
+        check_session_url: $OATHKEEPER_BACKEND_URL/internal/auth/lookup-project-access-token
+  authorizer:
+    handler: allow
+  mutators:
+    - handler: id_token
+      config:
+        issuer_url: http://oathkeeper:4455/
+        claims: |
+          {
+            "https://hasura.io/jwt/claims": {
+              "x-hasura-access-token": "{{ .Extra.access_token }}",
+              "x-hasura-project-uuid": "{{ .Extra.project_uuid }}",
+              "x-hasura-builds": "{{ .Extra.builds }}",
+              "x-hasura-allowed-roles": ["cli"],
+              "x-hasura-default-role": "cli"
+            }
+          }
+
+- id: "ory:lunatrace:hasura:graphql:service"
+  upstream:
+    preserve_host: true
+    url: $OATHKEEPER_HASURA_URL
+    strip_path: "/api/service"
+  match:
+    url: "$OATHKEEPER_MATCH_URL/api/service/v1/graphql"
+    methods:
+      - POST
+  authenticators:
+    - handler: bearer_token
+  authorizer:
+    handler: allow
+  mutators:
+    - handler: id_token
+      config:
+        issuer_url: http://oathkeeper:4455/
+        # backend can pretend to be a user if we want to check some auth stuff from the backend..so that role is allowed
+        claims: |
+          {
+            "https://hasura.io/jwt/claims": {
+              "x-hasura-user-id": "",
+              "x-hasura-allowed-roles": ["service", "user"], 
+              "x-hasura-default-role": "service"
+            }
+          }
+
+- id: "ory:lunatrace:backend:github"
+  upstream:
+    preserve_host: true
+    url: $OATHKEEPER_BACKEND_URL
+    strip_path: "/api"
+  match:
+    url: "$OATHKEEPER_MATCH_URL/api/github/<.*>"
+    methods:
+      - GET
+      - POST
+  authenticators:
+    - handler: anonymous
+  authorizer:
+    handler: allow
+  mutators:
+    - handler: noop
+
+- id: "ory:lunatrace:health"
+  upstream:
+    preserve_host: true
+    url: $OATHKEEPER_BACKEND_URL
+    strip_path: "/api"
+  match:
+    url: "<http|https>://<.*>/api/health"
+    methods:
+      - GET
+  authenticators:
+    - handler: anonymous
+  authorizer:
+    handler: allow
+  mutators:
+    - handler: noop
+
+- id: "ory:lunatrace:hasura:admin"
+  upstream:
+    preserve_host: true
+    strip_path: "/api/hasura"
+    url: $OATHKEEPER_HASURA_URL
+  match:
+    url: "$OATHKEEPER_MATCH_URL/api/hasura/<.*>"
+    methods:
+      - GET
+      - POST
+      - PUT
+      - DELETE
+      - OPTIONS
+  authenticators:
+    - handler: anonymous
+  authorizer:
+    handler: allow
+  mutators:
+    - handler: noop
+
+- id: "ory:lunatrace:kratos"
+  upstream:
+    preserve_host: true
+    url: $OATHKEEPER_KRATOS_URL
+    strip_path: "/api/kratos"
+  match:
+    url: "$OATHKEEPER_MATCH_URL/api/kratos/<.*>"
+    methods:
+      - GET
+      - POST
+      - PUT
+      - DELETE
+      - OPTIONS
+  authenticators:
+    - handler: anonymous
+  authorizer:
+    handler: allow
+  mutators:
+    - handler: noop
+
+# This route is only for development. In production, this rule should never be used. The load balancer will have handled this route before oathkeeper is called.
+- id: "ory:lunatrace:frontend:routes"
+  upstream:
+    preserve_host: true
+    url: $OATHKEEPER_FRONTEND_URL
+  match:
+    url: "$OATHKEEPER_MATCH_URL/<(?!api/).*>"
+    methods:
+      - GET
+  authenticators:
+    - handler: anonymous
+  authorizer:
+    handler: allow
+  mutators:
+    - handler: noop
+

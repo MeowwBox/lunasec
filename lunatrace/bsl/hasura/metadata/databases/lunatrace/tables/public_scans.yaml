@@ -1,0 +1,83 @@
+table:
+  name: scans
+  schema: public
+object_relationships:
+  - name: build
+    using:
+      foreign_key_constraint_on: build_id
+array_relationships:
+  - name: findings
+    using:
+      foreign_key_constraint_on:
+        column: scan_id
+        table:
+          name: findings
+          schema: public
+insert_permissions:
+  - role: service
+    permission:
+      check: {}
+      columns:
+        - created_at
+        - source_type
+        - target
+        - id
+        - build_id
+        - db_date
+        - grype_version
+        - distro_name
+        - distro_version
+        - scan_number
+select_permissions:
+  - role: service
+    permission:
+      columns:
+        - db_date
+        - scan_number
+        - distro_name
+        - distro_version
+        - grype_version
+        - source_type
+        - target
+        - created_at
+        - build_id
+        - id
+      filter: {}
+  - role: user
+    permission:
+      columns:
+        - db_date
+        - scan_number
+        - distro_name
+        - distro_version
+        - grype_version
+        - source_type
+        - target
+        - created_at
+        - build_id
+        - id
+      filter:
+        build:
+          project:
+            organization:
+              organization_users:
+                user:
+                  kratos_id:
+                    _eq: X-Hasura-User-Id
+      allow_aggregations: true
+update_permissions:
+  - role: service
+    permission:
+      columns:
+        - db_date
+        - scan_number
+        - distro_name
+        - distro_version
+        - grype_version
+        - source_type
+        - target
+        - created_at
+        - build_id
+        - id
+      filter: {}
+      check: {}

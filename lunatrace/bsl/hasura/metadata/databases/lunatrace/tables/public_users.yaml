@@ -1,0 +1,57 @@
+table:
+  name: users
+  schema: public
+object_relationships:
+  - name: kratos_identity
+    using:
+      foreign_key_constraint_on: kratos_id
+insert_permissions:
+  - role: service
+    permission:
+      check: {}
+      columns:
+        - github_id
+        - github_node_id
+        - id
+        - kratos_id
+select_permissions:
+  - role: service
+    permission:
+      columns:
+        - github_id
+        - github_node_id
+        - id
+        - kratos_id
+        - role
+      filter: {}
+  - role: user
+    permission:
+      columns:
+        - github_node_id
+        - id
+        - kratos_id
+        - role
+      filter:
+        _or:
+          - id:
+              _eq: X-Hasura-Real-User-Id
+          - _exists:
+              _table:
+                name: users
+                schema: public
+              _where:
+                _and:
+                  - id:
+                      _eq: X-Hasura-Real-User-Id
+                  - role:
+                      _eq: lunatrace_admin
+update_permissions:
+  - role: service
+    permission:
+      columns:
+        - github_id
+        - github_node_id
+        - id
+        - kratos_id
+      filter: {}
+      check: null

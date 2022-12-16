@@ -1,0 +1,5 @@
+mutation InsertBuild($build: builds_insert_input!) {
+    insert_builds_one(object: $build) {
+        id
+    }
+}

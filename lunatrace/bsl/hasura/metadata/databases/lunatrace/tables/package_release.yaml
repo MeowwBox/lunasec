@@ -1,0 +1,94 @@
+table:
+  name: release
+  schema: package
+object_relationships:
+  - name: package
+    using:
+      foreign_key_constraint_on: package_id
+  - name: publishing_maintainer
+    using:
+      foreign_key_constraint_on: publishing_maintainer_id
+array_relationships:
+  - name: build_dependency_relationships
+    using:
+      foreign_key_constraint_on:
+        column: release_id
+        table:
+          name: build_dependency_relationship
+          schema: public
+  - name: release_dependencies
+    using:
+      foreign_key_constraint_on:
+        column: release_id
+        table:
+          name: release_dependency
+          schema: package
+  - name: release_licenses
+    using:
+      foreign_key_constraint_on:
+        column: release_id
+        table:
+          name: release_license
+          schema: package
+insert_permissions:
+  - role: service
+    permission:
+      check: {}
+      columns:
+        - blob_hash
+        - fetched_time
+        - id
+        - mirrored_blob_url
+        - observed_time
+        - package_id
+        - publishing_maintainer_id
+        - release_time
+        - upstream_blob_url
+        - upstream_data
+        - version
+select_permissions:
+  - role: service
+    permission:
+      columns:
+        - blob_hash
+        - fetched_time
+        - id
+        - mirrored_blob_url
+        - observed_time
+        - package_id
+        - publishing_maintainer_id
+        - release_time
+        - upstream_blob_url
+        - upstream_data
+        - version
+      filter: {}
+  - role: user
+    permission:
+      columns:
+        - fetched_time
+        - id
+        - observed_time
+        - package_id
+        - publishing_maintainer_id
+        - release_time
+        - upstream_data
+        - version
+      filter: {}
+      allow_aggregations: true
+update_permissions:
+  - role: service
+    permission:
+      columns:
+        - blob_hash
+        - fetched_time
+        - id
+        - mirrored_blob_url
+        - observed_time
+        - package_id
+        - publishing_maintainer_id
+        - release_time
+        - upstream_blob_url
+        - upstream_data
+        - version
+      filter: {}
+      check: {}

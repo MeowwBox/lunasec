@@ -1,0 +1,12 @@
+
+# DEPRECATED, this was used to upsert orgs and projects together on manual install, and is no longer being iused
+
+mutation UpsertOrganizations($object: [organizations_insert_input!]!, $on_conflict: organizations_on_conflict) {
+    insert_organizations(objects: $object, on_conflict: $on_conflict) {
+        returning{
+            id
+            github_node_id
+            name
+        }
+    }
+}

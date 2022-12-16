@@ -1,0 +1,138 @@
+name: LunaTrace Stack and Hasura
+
+# This workflow posts hasura changes as a comment.
+on:
+  pull_request:
+    branches:
+      - '**'
+    paths:
+      - '.github/**'
+      - 'lunatrace/**'
+  push:
+    branches:
+      - master
+
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+          cache: 'yarn'
+      - uses: actions/setup-go@v3
+        with:
+          go-version: '>=1.18.0'
+          cache: true
+
+      - name: Yarn Install
+        env:
+          IS_LUNASEC_CI: true
+        run: yarn install --immutable --inline-builds
+      - name: Build
+        run: |-
+          set -x
+          (cd lunatrace/bsl/logger && yarn run compile)
+          (cd lunatrace/bsl/common && yarn run compile)
+          (cd lunatrace/bsl/backend && yarn run compile)
+          #(cd lunatrace/bsl/frontend && yarn run build)
+
+      - name: Start backend
+        run: |-
+          cd lunatrace/bsl/backend
+          
+          export S3_SBOM_BUCKET=fake
+          export S3_CODE_BUCKET=fake
+          export S3_MANIFEST_BUCKET=fake
+          export PROCESS_WEBHOOK_QUEUE=fake
+          export PROCESS_REPOSITORY_QUEUE=fake
+          export PROCESS_MANIFEST_QUEUE=fake
+          export PROCESS_SBOM_QUEUE=fake
+          export DISABLE_WEBHOOK_QUEUE=true
+          
+          yarn run start:prod &
+          timeout 120 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:3002)" != "200" ]]; do sleep 1; done' || false
+
+      - name: "Start Vendor Services with Docker Compose Up"
+        run: |-
+          echo "DD_API_KEY=fake" >> .env.dev
+          docker-compose up -d
+        working-directory: lunatrace/bsl
+
+      - name: Hasura Metadata Check
+        run: |-
+          timeout 120 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8080)" != "404" ]]; do sleep 1; done' || (
+            echo "# Hasura start error" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            cd lunatrace/bsl && docker-compose logs --no-log-prefix --no-color | grep -E '(skipping applying migrations on database)'| jq -R '. | fromjson?' | tee -a $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            exit 1
+          )
+          cd lunatrace/bsl/hasura
+          
+          function hasura() {
+            npx --yes hasura-cli --skip-update-check $@
+          }
+          set -x
+          hasura md ic list >> /tmp/hasura_ic
+          if ! hasura md ic status; then
+            echo "Hasura metadata inconsistency" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            cat /tmp/hasura_ic >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
+      - run: docker-compose logs
+        if: always()
+        working-directory: lunatrace/bsl
+
+      - name: Generate Files
+        run: |-
+          git status
+          (cd lunatrace/bsl/backend && yarn generate)
+          (cd lunatrace/bsl/frontend && yarn generate)
+          go generate ./... || true
+          git status
+
+      - name: Check Generated Files
+        id: check_generated
+        run: |-          
+          DIFF=`git diff -p -- . ':(exclude)lunatrace/schema.graphql'`
+          
+          if [[ ! -z "$DIFF" ]]; then
+            echo "# Generated files don't match" >> $GITHUB_STEP_SUMMARY
+            echo "run yarn generate" >> $GITHUB_STEP_SUMMARY
+            echo '```diff' >> $GITHUB_STEP_SUMMARY
+            echo "$DIFF" | tee -a $GITHUB_STEP_SUMMARY
+            echo "::error Generated files do not match. See job summary for diff."
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "::set-output name=changes::true"
+          fi
+
+      - name: Create Pull Request
+        id: cpr
+        uses: peter-evans/create-pull-request@v4
+        if: github.event_name == 'pull_request'
+        with:
+          commit-message: Update generated files
+          base: ${{ github.head_ref }}
+          branch: regenerate/${{ github.head_ref }}
+          delete-branch: true
+          title: "Regenerate files for ${{ github.head_ref }}"
+          body: |
+            Update generated files
+          labels: |
+            automated
+          assignees: ${{ !contains(github.actor, '[bot]') && github.actor }}
+          draft: false
+      - name: Fail if there were changes
+        if: ${{ steps.cpr.outputs.pull-request-number }}
+        run: |
+          echo "Generated files don't match, pull request created:"
+          echo "${{ steps.cpr.outputs.pull-request-url }}"
+          exit 1

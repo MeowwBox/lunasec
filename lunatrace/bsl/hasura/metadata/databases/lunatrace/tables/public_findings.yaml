@@ -1,0 +1,135 @@
+table:
+  name: findings
+  schema: public
+object_relationships:
+  - name: build
+    using:
+      foreign_key_constraint_on: build_id
+  - name: default_branch_build
+    using:
+      manual_configuration:
+        column_mapping:
+          build_id: id
+        insertion_order: null
+        remote_table:
+          name: default_branch_builds
+          schema: public
+  - name: latest_default_build
+    using:
+      manual_configuration:
+        column_mapping:
+          build_id: id
+        insertion_order: null
+        remote_table:
+          name: latest_default_builds
+          schema: public
+  - name: scan
+    using:
+      foreign_key_constraint_on: scan_id
+  - name: vulnerability
+    using:
+      foreign_key_constraint_on: vulnerability_id
+insert_permissions:
+  - role: service
+    permission:
+      check: {}
+      columns:
+        - build_id
+        - created_at
+        - dedupe_slug
+        - fix_state
+        - fix_versions
+        - id
+        - language
+        - locations
+        - matcher
+        - package_name
+        - purl
+        - scan_id
+        - severity
+        - type
+        - updated_at
+        - version
+        - version_matcher
+        - virtual_path
+        - vulnerability_id
+select_permissions:
+  - role: service
+    permission:
+      columns:
+        - build_id
+        - created_at
+        - dedupe_slug
+        - fix_state
+        - fix_versions
+        - id
+        - language
+        - locations
+        - matcher
+        - package_name
+        - purl
+        - scan_id
+        - severity
+        - type
+        - updated_at
+        - version
+        - version_matcher
+        - virtual_path
+        - vulnerability_id
+      filter: {}
+  - role: user
+    permission:
+      columns:
+        - fix_versions
+        - locations
+        - dedupe_slug
+        - language
+        - matcher
+        - package_name
+        - purl
+        - type
+        - version
+        - version_matcher
+        - virtual_path
+        - created_at
+        - updated_at
+        - fix_state
+        - severity
+        - build_id
+        - id
+        - scan_id
+        - vulnerability_id
+      filter:
+        build:
+          project:
+            organization:
+              organization_users:
+                user:
+                  kratos_id:
+                    _eq: X-Hasura-User-Id
+      allow_aggregations: true
+update_permissions:
+  - role: service
+    permission:
+      columns:
+        - id
+        - created_at
+        - updated_at
+        - vulnerability_id
+        - scan_id
+        - build_id
+        - fix_state
+        - fix_versions
+        - package_name
+        - version
+        - version_matcher
+        - type
+        - locations
+        - language
+        - purl
+        - virtual_path
+        - matcher
+        - dedupe_slug
+        - severity
+      filter: {}
+      check: null

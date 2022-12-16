@@ -1,0 +1,80 @@
+query GetVulnerableReleasesFromBuild($buildId: uuid!, $minimumSeverity: String!, $previewChains: Boolean) {
+    vulnerableReleasesFromBuild(buildId: $buildId, minimumSeverity: $minimumSeverity, previewChains: $previewChains) {
+        trivially_updatable
+        beneath_minimum_severity
+        cvss
+        severity
+        paths
+        fix_versions
+        guides {
+            id
+            title
+            summary
+        }
+        dev_only
+        chains {
+            id
+            range
+            release {
+                id
+                package {
+                    name
+                }
+                version
+            }
+            reachable
+            locations {
+                id
+                path
+                start_row
+                end_row
+            }
+        }
+        release {
+            version
+            package {
+                name
+                package_manager
+            }
+        }
+        affected_by {
+            trivially_updatable_to
+            beneath_minimum_severity
+            fix_versions
+            path
+            ignored
+            ignored_vulnerability {
+                locations
+                note
+            }
+            vulnerability{
+                severity_name
+                cvss_score
+                source
+                summary
+                id
+                source_id
+                guide_vulnerabilities {
+                    guide {
+                        id
+                        summary
+                        title
+                    }
+                }
+                cwes {
+                    id
+                    cwe {
+                        id
+                        name
+                        description
+                        common_name
+                    }
+                }
+            }
+        }
+        dev_only
+        release {
+            id
+        }
+    }
+}

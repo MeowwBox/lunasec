@@ -1,0 +1,7 @@
+node_modules
+yarn.lock
+build/
+*.pem
+!package-lock.json
+.env.dev
+logs/*.log

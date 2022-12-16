@@ -3,15 +3,16 @@ node_modules
 *.tsbuildinfo
 **/secrets.yaml
 *.log
-/docs/pages/node-sdk
-/docs/pages/tokenizer-sdk
+.log*
 **/package-lock.json
+**/yarn.lock-workspace
 
 .npmrc
 
 docker-compose.*.yaml
 .env.docker
 outputs/
+.log*
 
 .yarn/*
 !.yarn/cache
@@ -21,4 +22,12 @@ outputs/
 !.yarn/sdks
 !.yarn/versions
 
-docs/.yarn/.cache/webpack/client-development-en/
+docs/.yarn/.cache/webpack
+
+.eslintcache
+
+
+deployment-secrets/
+.gitattributes
+
+.pnp.cjs

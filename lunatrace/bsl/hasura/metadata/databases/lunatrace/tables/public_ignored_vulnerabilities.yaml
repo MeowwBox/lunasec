@@ -1,0 +1,86 @@
+table:
+  name: ignored_vulnerabilities
+  schema: public
+object_relationships:
+  - name: creator
+    using:
+      foreign_key_constraint_on: creator_id
+  - name: project
+    using:
+      foreign_key_constraint_on: project_id
+  - name: vulnerability
+    using:
+      foreign_key_constraint_on: vulnerability_id
+insert_permissions:
+  - role: user
+    permission:
+      check:
+        project:
+          organization:
+            organization_users:
+              user:
+                kratos_id:
+                  _eq: X-Hasura-User-Id
+      set:
+        creator_id: x-Hasura-User-Id
+      columns:
+        - creator_id
+        - locations
+        - note
+        - project_id
+        - vulnerability_id
+select_permissions:
+  - role: service
+    permission:
+      columns:
+        - creator_id
+        - id
+        - locations
+        - note
+        - project_id
+        - vulnerability_id
+      filter: {}
+  - role: user
+    permission:
+      columns:
+        - creator_id
+        - id
+        - locations
+        - note
+        - project_id
+        - vulnerability_id
+      filter:
+        project:
+          organization:
+            organization_users:
+              user:
+                kratos_id:
+                  _eq: X-Hasura-User-Id
+update_permissions:
+  - role: user
+    permission:
+      columns:
+        - creator_id
+        - locations
+        - note
+        - project_id
+        - vulnerability_id
+      filter:
+        project:
+          organization:
+            organization_users:
+              user:
+                kratos_id:
+                  _eq: X-Hasura-User-Id
+      check: null
+delete_permissions:
+  - role: user
+    permission:
+      backend_only: false
+      filter:
+        project:
+          organization:
+            organization_users:
+              user:
+                kratos_id:
+                  _eq: X-Hasura-User-Id

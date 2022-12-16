@@ -1,4 +1,20 @@
 /*
+ * Copyright 2022 by LunaSec (owned by Refinery Labs, Inc)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+/*
  * Copyright by LunaSec (owned by Refinery Labs, Inc)
  *
  * Licensed under the Creative Commons Attribution-ShareAlike 4.0 International
@@ -17,33 +33,31 @@ import styles from './HomepageFeatures.module.css';
 
 const FeatureList = [
   {
-    title: 'Designed For Developers',
+    title: 'The best supply-chain auditing tool for JavaScript',
     Svg: require('../../static/img/60e63e8c40f27c7c73def81f_Online storage_Monochromatic.svg').default,
     description: (
       <>
-        Data security for your software that doesn't require having a PHD in cryptography.
-        Ship without being blocked by security reviews.
+        Jam-packed with JavaScript specific auditing features, with a fall-back to basic auditing for other languages.
       </>
     ),
   },
   {
-    title: 'Powerful Security Features',
-    Svg: require('../../static/img/60e63e8c40f27c84c0def803_Analytics process_Monochromatic.svg').default,
-    description: (
-      <>
-        Remove sensitive data from your database with tokenization,
-        centralize all of your authorization checks,
-        add end-to-end encryption from your front-end to your backend,
-        add zero-trust computation to your backend, and more.
-      </>
-    ),
-  },
-  {
-    title: 'Designed by Security Engineers',
+    title: 'Situationally Aware',
     Svg: require('../../static/img/60e63e8c40f27c3024def81b_Information flow_Monochromatic.svg').default,
     description: (
       <>
-        We built and designed LunaSec from years of experience helping developers write secure production software.
+        LunaTrace processes a complete model of your source code and dependency tree. Where it can, it uses this information
+          to eliminate false positives.
+          Where it can't, it exposes the information to you so that you can make a decision faster.
+      </>
+    ),
+  },
+  {
+    title: 'Open Source',
+    Svg: require('../../static/img/60e63e8c40f27c84c0def803_Analytics process_Monochromatic.svg').default,
+    description: (
+      <>
+        Built out of extendable, Open Source components that you can read, inspect, and even host for yourself.
       </>
     ),
   },

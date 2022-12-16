@@ -38,14 +38,13 @@ const quotedGithubUrl = `"${githubUrl}"`
 
 /** @type {import('@docusaurus/types').DocusaurusConfig} */
 module.exports = {
-  title: 'LunaSec',
-  tagline: 'Data security from the start.',
+  title: 'LunaTrace',
+  tagline: 'Vulnerability Control Center',
   url: 'https://www.lunasec.io',
   baseUrl: '/docs/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
-  // WARNING: Put this back or else production will be busted!
-  // trailingSlash: true,
+  trailingSlash: true,
   favicon: 'https://uploads-ssl.webflow.com/60e63e8b40f27c7913def7a1/6112d961cd68c3de06afe04d_WebFlow%20Logo%20-%2032px.png',
   organizationName: 'lunasec-io', // Usually your GitHub org/user name.
   projectName: 'lunasec-io.github.io', // Usually your repo name.
@@ -73,13 +72,13 @@ module.exports = {
       'docusaurus-plugin-typedoc',
       {
         id: 'typedoc-react-sdk',
-        entryPoints: ['../js/sdks/packages/react-sdk/src/types/component-types.ts'],
+        entryPoints: ['../lunadefend/js/sdks/packages/react-sdk/src/types/component-types.ts'],
         defaultCategory:'Component',
-        tsconfig: '../js/sdks/packages/react-sdk/tsconfig.json',
+        tsconfig: '../lunadefend/js/sdks/packages/react-sdk/tsconfig.json',
         watch: process.env.TYPEDOC_WATCH,
         // Without this, our URL becomes `lunasec.io/docs/docs`. I prefer `lunasec.io/docs/pages`.
         docsRoot: 'pages',
-        out: 'react-sdk',
+        out: 'lunadefend/react-sdk',
         sidebar: {
           categoryLabel: "React SDK"
         },
@@ -92,12 +91,12 @@ module.exports = {
       'docusaurus-plugin-typedoc',
       {
         id: 'typedoc-node-sdk',
-        entryPoints: ['../js/sdks/packages/node-sdk/src/index.ts'],
-        tsconfig: '../js/sdks/packages/node-sdk/tsconfig.json',
+        entryPoints: ['../lunadefend/js/sdks/packages/node-sdk/src/index.ts'],
+        tsconfig: '../lunadefend/js/sdks/packages/node-sdk/tsconfig.json',
         watch: process.env.TYPEDOC_WATCH,
         // Without this, our URL becomes `lunasec.io/docs/docs`. I prefer `lunasec.io/docs/pages`.
         docsRoot: 'pages',
-        out: 'node-sdk',
+        out: 'lunadefend/node-sdk',
         sidebar: {
           categoryLabel: "Node SDK"
         },
@@ -110,12 +109,12 @@ module.exports = {
       'docusaurus-plugin-typedoc',
       {
         id: 'typedoc-tokenizer',
-        entryPoints: ['../js/sdks/packages/tokenizer-sdk/src/index.ts'],
-        tsconfig: '../js/sdks/packages/tokenizer-sdk/tsconfig.json',
+        entryPoints: ['../lunadefend/js/sdks/packages/tokenizer-sdk/src/index.ts'],
+        tsconfig: '../lunadefend/js/sdks/packages/tokenizer-sdk/tsconfig.json',
         watch: process.env.TYPEDOC_WATCH,
         // Without this, our URL becomes `lunasec.io/docs/docs`. I prefer `lunasec.io/docs/pages`.
         docsRoot: 'pages',
-        out: 'tokenizer-sdk',
+        out: 'lunadefend/tokenizer-sdk',
         sidebar: {
           categoryLabel: "Tokenizer SDK"
         },
@@ -129,12 +128,12 @@ module.exports = {
       'docusaurus-plugin-typedoc',
       {
         id: 'typedoc-cli',
-        entryPoints: ['../js/sdks/packages/cli/src/config/types.ts'],
-        tsconfig: '../js/sdks/packages/cli/tsconfig.json',
+        entryPoints: ['../lunadefend/js/sdks/packages/cli/src/config/types.ts'],
+        tsconfig: '../lunadefend/js/sdks/packages/cli/tsconfig.json',
         watch: process.env.TYPEDOC_WATCH,
         // Without this, our URL becomes `lunasec.io/docs/docs`. I prefer `lunasec.io/docs/pages`.
         docsRoot: 'pages',
-        out: 'cli-config',
+        out: 'lunadefend/cli-config',
         sidebar: {
           categoryLabel: "CLI Configuration"
         },
@@ -158,25 +157,31 @@ module.exports = {
       //... other Algolia params
     },
     announcementBar: {
-      id: 'star_us',
+      id: 'mailing_list',
       content:
-        '<a href="https://www.lunasec.io/docs/pages/how-it-works/features/" target="_blank" rel="nooper">Learn how</a> LunaSec helps protect you from 0-days, and Star us on <a href="https://github.com/lunasec-io/lunasec" target="_blank" ref="noopener">GitHub</a>.',
-      backgroundColor: '#fafbfc',
+        '<a href="/docs/pages/mailing-list" style="font-size: 15px; text-decoration: none">Subscribe to our mailing list to get the latest security news and product updates.</a>',
+      backgroundColor: '#9ec6ef',
       textColor: '#091E42',
       isCloseable: true,
     },
     navbar: {
       logo: {
         alt: 'LunaSec Logo',
-        src: '/docs/img/logo-black-text.svg',
+        src: '/docs/img/logo-black-text_500px.svg',
         srcDark: '/docs/img/logo-white-text.svg'
       },
       items: [
         {
           type: 'doc',
-          docId: 'overview/introduction',
+          docId: 'lunatrace/overview/introduction',
           position: 'left',
-          label: 'Docs'
+          label: 'LunaTrace'
+        },
+        {
+          type: 'doc',
+          docId: 'lunadefend/overview/introduction',
+          position: 'left',
+          label: 'LunaDefend'
         },
         {
           to: '/docs/blog',

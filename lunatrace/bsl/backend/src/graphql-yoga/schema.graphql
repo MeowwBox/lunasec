@@ -1,0 +1,181 @@
+scalar uuid
+scalar jsonb
+
+type Query {
+    """ get s3 presigned url for manifest upload, used by the CLI """
+    presignSbomUpload(
+        orgId: uuid!
+        buildId: uuid!
+    ): SbomUploadUrlOutput
+    sbomUrl(
+        buildId: uuid!
+    ): String
+    authenticatedRepoCloneUrl(
+        repoGithubId: Int!
+    ): AuthenticatedRepoCloneUrlOutput
+    fakeQueryToHackHasuraBeingABuggyMess: String
+    availableOrgsWithRepos: [OrgWithRepos!]
+    vulnerableReleasesFromBuild(buildId: uuid!, minimumSeverity: String, previewChains: Boolean): [BuildData_VulnerableRelease!]
+}
+
+type Mutation {
+    """ get s3 presigned url for manifest upload, used only by the frontend """
+    presignManifestUpload(
+        project_id: uuid!
+    ): PresignedUrlResponse
+    installSelectedRepos(
+        orgs: [OrgsWithReposInput!]!
+    ): InstallSelectedReposResponse
+}
+
+input OrgsWithReposInput {
+    id: String!
+    repos: [Int!]!
+}
+
+type InstallSelectedReposResponse {
+    success: Boolean
+}
+
+input SbomUploadUrlInput {
+    orgId: uuid!
+    projectId: uuid!
+}
+
+type SbomUploadUrlOutput {
+    error: Boolean!
+    uploadUrl: UploadUrl
+}
+
+type PresignedUrlResponse {
+    url: String!
+    headers: jsonb!
+    key: String!
+    bucket: String!
+}
+
+type UploadUrl {
+    url: String!
+    headers: jsonb!
+}
+
+type AuthenticatedRepoCloneUrlOutput {
+    url: String
+}
+
+type GithubRepository {
+    orgName: String!
+    orgId: Int!
+    orgNodeId: String!
+    repoName: String!
+    repoId: Int!
+    repoNodeId: String!
+    gitUrl: String!
+    ownerType: String!
+    cloneUrl: String!
+    defaultBranch: String!
+}
+
+type OrgWithRepos {
+    organizationName: String!
+    id: String!
+    repos: [GithubRepository!]!
+}
+
+# Vulnerable Release Types
+type BuildData_VulnerableRelease {
+    dev_only: Boolean!
+    severity: String!
+    cvss: Float
+    chains: [[BuildData_DependencyNode!]!]!
+    affected_by: [BuildData_AffectedByVulnerability!]!
+    release: BuildData_Release!
+    trivially_updatable: String!
+    beneath_minimum_severity: Boolean!
+    guides: [BuildData_Guide!]!
+    fix_versions: [String!]!
+    paths: [String!]!
+}
+
+type BuildData_IgnoredVulnerability {
+    note: String!
+    locations: [String!]!
+}
+
+type BuildData_AffectedByVulnerability {
+    vulnerability: BuildData_Vulnerability!
+    beneath_minimum_severity: Boolean!
+    ranges: [BuildData_Range!]!
+    ignored: Boolean!
+    ignored_vulnerability: BuildData_IgnoredVulnerability
+    trivially_updatable_to: String
+    fix_versions: [String!]!
+    path: String!
+}
+
+type BuildData_Location {
+    id: String!
+    path: String!
+    start_row: Int!
+    start_column: Int!
+    end_row: Int!
+    end_column: Int!
+}
+
+type BuildData_DependencyNode {
+    id: String!
+    range: String!
+    release_id: String!
+    release: BuildData_Release!
+    reachable: String!
+    locations: [BuildData_Location!]!
+}
+
+type BuildData_Range {
+    introduced: String
+    fixed: String
+}
+
+type BuildData_Release {
+    id: String!
+    version: String!
+    package: BuildData_Package!
+}
+
+type BuildData_Package {
+    name: String!
+    package_manager: String!
+}
+
+type BuildData_Vulnerability {
+    id: String!
+    severity_name: String
+    cvss_score: Float
+    summary: String
+    source: String!
+    source_id: String!
+    guide_vulnerabilities: [BuildData_Guide_Vulnerability!]!
+    cwes: [BuildData_VulnerabilityCwe!]!
+}
+
+type BuildData_VulnerabilityCwe {
+    id: String!
+    cwe: BuildData_Cwe!
+}
+
+type BuildData_Cwe {
+    id: Int!
+    name: String!
+    description: String!
+    common_name: String
+}
+
+type BuildData_Guide_Vulnerability {
+    guide: BuildData_Guide
+}
+
+type BuildData_Guide {
+    summary:String!
+    id: String!
+    title: String!
+}

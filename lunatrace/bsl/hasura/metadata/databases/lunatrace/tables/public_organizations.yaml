@@ -1,0 +1,98 @@
+table:
+  name: organizations
+  schema: public
+object_relationships:
+  - name: creator
+    using:
+      foreign_key_constraint_on: creator_id
+  - name: settings
+    using:
+      foreign_key_constraint_on: settings_id
+array_relationships:
+  - name: organization_users
+    using:
+      foreign_key_constraint_on:
+        column: organization_id
+        table:
+          name: organization_user
+          schema: public
+  - name: projects
+    using:
+      foreign_key_constraint_on:
+        column: organization_id
+        table:
+          name: projects
+          schema: public
+insert_permissions:
+  - role: service
+    permission:
+      check: {}
+      columns:
+        - createdAt
+        - creator_id
+        - github_id
+        - github_node_id
+        - github_owner_type
+        - id
+        - installation_id
+        - name
+        - settings_id
+  - role: user
+    permission:
+      check: {}
+      set:
+        creator_id: x-hasura-Real-User-Id
+      columns:
+        - name
+select_permissions:
+  - role: service
+    permission:
+      columns:
+        - name
+        - github_id
+        - github_node_id
+        - installation_id
+        - createdAt
+        - creator_id
+        - id
+        - settings_id
+      filter: {}
+      allow_aggregations: true
+  - role: user
+    permission:
+      columns:
+        - createdAt
+        - id
+        - installation_id
+        - name
+        - settings_id
+      filter:
+        _or:
+          - organization_users:
+              user_id:
+                _eq: X-Hasura-Real-User-Id
+          - _exists:
+              _table:
+                name: users
+                schema: public
+              _where:
+                _and:
+                  - id:
+                      _eq: X-Hasura-Real-User-Id
+                  - role:
+                      _eq: lunatrace_admin
+update_permissions:
+  - role: service
+    permission:
+      columns:
+        - createdAt
+        - creator_id
+        - github_id
+        - github_node_id
+        - github_owner_type
+        - id
+        - installation_id
+        - name
+        - settings_id
+      filter: {}
+      check: {}

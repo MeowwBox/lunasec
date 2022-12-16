@@ -14,6 +14,14 @@
  * limitations under the License.
  *
  */
+const process = require('process');
+
+const hideErrorsInDev = process.env.HIDE_ERRORS_IN_DEV === 'true';
+
+const productionError = hideErrorsInDev ? 'warn': 'error';
+const productionWarn = hideErrorsInDev ? 'off': 'warn';
+
+
 module.exports = {
   root: true,
   env: {
@@ -21,10 +29,6 @@ module.exports = {
     node: true
   },
   extends: [
-    // "plugin:vue/vue3-essential",
-    // "@vue/typescript/recommended",
-    // "@vue/prettier",
-    // "@vue/prettier/@typescript-eslint",
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
     'plugin:@typescript-eslint/recommended-requiring-type-checking',
@@ -35,76 +39,122 @@ module.exports = {
     'plugin:import/typescript',
     'plugin:prettier/recommended',
   ],
-  ignorePatterns: ['packages/tokenizer-sdk/src/generated'],
+  ignorePatterns: [
+    'packages/tokenizer-sdk/src/generated',
+    'lunatrace/bsl/frontend/src/api/generated.ts',
+    '@aws-sdk/**',
+    'lunatrace/bsl/backend-cdk/cdk.out'
+  ],
   parser: '@typescript-eslint/parser',
   parserOptions: {
     ecmaFeatures: {
       jsx: true
     },
+    tsconfigRootDir: __dirname,
     ecmaVersion: 12,
     sourceType: 'module',
     project: [
-      'js/sdks/packages/vue-sdk/tsconfig.json',
-      'js/sdks/tsconfig.json',
-      'js/demo-apps/packages/demo-back-end/tsconfig.json',
-      'js/demo-apps/packages/react-front-end/tsconfig.json',
-      'js/internal-infrastructure/metrics-server-backend/tsconfig.json',
-      'js/internal-infrastructure/s3-redirect-generator/tsconfig.json',
+      'lunadefend/js/sdks/packages/vue-sdk/tsconfig.json',
+      'lunadefend/js/sdks/tsconfig.json',
+      'lunadefend/js/demo-apps/packages/demo-back-end/tsconfig.json',
+      'lunadefend/js/demo-apps/packages/react-front-end/tsconfig.json',
+      'lunadefend/js/internal-infrastructure/metrics-server-backend/tsconfig.json',
+      'lunadefend/js/internal-infrastructure/s3-redirect-generator/tsconfig.json',
+      'lunatrace/bsl/common/tsconfig.json',
+      'lunatrace/bsl/frontend/tsconfig.json',
+      'lunatrace/bsl/backend-cdk/tsconfig.json',
+      'lunatrace/bsl/backend/tsconfig.json',
+      'lunatrace/dev-cli/tsconfig.json',
+      'lunatrace/bsl/common/tsconfig.json',
+      'lunatrace/bsl/logger/tsconfig.json',
+      'lunatrace/datadog-metrics-proxy/tsconfig.json',
+      'docs/tsconfig.json'
     ]
   },
   plugins: [
     'react',
     '@typescript-eslint',
-    'jest'
+    'jest',
+    'unused-imports'
   ],
   rules: {
-    "@typescript-eslint/no-unsafe-argument": 1, // TODO: Re-enable this rule and fix all errors
-    'no-console': process.env.NODE_ENV === 'production' ? 'error' : 'off', // These never error, currently
-    'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
+    '@typescript-eslint/no-unsafe-argument': productionWarn, // TODO: Re-enable this rule and fix all errors
+    '@typescript-eslint/no-misused-promises': productionWarn,
+    '@typescript-eslint/no-unsafe-assignment': productionWarn,
+    '@typescript-eslint/no-unsafe-call': productionWarn,
+    '@typescript-eslint/no-unsafe-return': productionWarn,
+    '@typescript-eslint/no-unsafe-member-access': productionWarn,
+    'import/namespace': 'off', // productionError,
+    'no-console': productionWarn,
+    'no-debugger': productionError,
     eqeqeq: 'error',
-    quotes: ['error', 'single', { allowTemplateLiterals: true, avoidEscape: true }],
-    'react/jsx-wrap-multilines': ['error', {
-      declaration: 'parens-new-line',
-      assignment: 'parens-new-line',
-      return: 'parens-new-line',
-      arrow: 'parens-new-line',
-      condition: 'parens-new-line',
-      logical: 'parens-new-line',
-      prop: 'parens-new-line',
-    }],
-    'react/jsx-first-prop-new-line': ['error', 'multiline-multiprop'],
-    'react/jsx-max-props-per-line': ['error', { 'maximum': 3, 'when': 'multiline' }],
-    'react/jsx-indent-props': ['error', 2],
+    quotes: [productionWarn, 'single', { allowTemplateLiterals: true, avoidEscape: true }],
+    curly:'warn',
+    'react/jsx-wrap-multilines': [
+      productionError,
+      {
+        declaration: 'parens-new-line',
+        assignment: 'parens-new-line',
+        return: 'parens-new-line',
+        arrow: 'parens-new-line',
+        condition: 'parens-new-line',
+        logical: 'parens-new-line',
+        prop: 'parens-new-line',
+      }
+    ],
+    'react/jsx-first-prop-new-line': [
+      productionError,
+      'multiline-multiprop'
+    ],
+    'react/jsx-max-props-per-line': [
+      productionError,
+      {
+        'maximum': 3,
+        'when': 'multiline'
+      }
+    ],
+    'react/jsx-indent-props': [
+      productionError,
+      2
+    ],
     'react/jsx-closing-bracket-location': [
-      'error',
+      productionError,
       'tag-aligned',
     ],
-    "react-hooks/exhaustive-deps": "off",
-    'prettier/prettier': ['error', { singleQuote: true, printWidth: 120 }],
-    '@typescript-eslint/explicit-module-boundary-types': 'off',
+    'react-hooks/exhaustive-deps': 'off',
+    'prettier/prettier': [
+      productionWarn,
+      {
+        singleQuote: true,
+        printWidth: 120
+      }
+      ],
+    '@typescript-eslint/explicit-module-boundary-types': 'warn',
     'eslint-comments/disable-enable-pair': [
       'error',
       { 'allowWholeFile': true }
     ],
-    'eslint-comments/no-unlimited-disable':'off',
+    'eslint-comments/no-unlimited-disable': 'off',
     'eslint-comments/no-unused-disable': 'error',
-    '@typescript-eslint/no-unused-vars':['warn',{ "argsIgnorePattern": "^_" }],
-    '@typescript-eslint/no-unsafe-call':'off', // Did this because of a bug with intellij (forrest)
-    '@typescript-eslint/no-unsafe-member-access':'off',
-    '@typescript-eslint/no-unsafe-assignment':'off',
-    '@typescript-eslint/unbound-method':'off',
+    '@typescript-eslint/no-unused-vars':[
+      productionWarn,
+      { 'argsIgnorePattern': '^_' },
+    ],
+     //'unused-imports/no-unused-imports': 'error', // turn this on if you want to --fix all of these out of the codebase
+    '@typescript-eslint/unbound-method': 'warn',
+    '@typescript-eslint/restrict-template-expressions': 'off',
     'import/order': [
-      'error',
+      productionError,
       { 'newlines-between': 'always', 'alphabetize': { 'order': 'asc' } }
     ],
     'sort-imports': [
-      'error',
+      productionError,
       { 'ignoreDeclarationSort': true, 'ignoreCase': true }
     ]
   },
   settings: {
     react: {
-      version: 'detect'
+      version: '16'
     }
   }
 }

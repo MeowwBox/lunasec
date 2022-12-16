@@ -1,0 +1,46 @@
+//.project-page {
+//  > .nav-item {
+//    font-size: $lg
+//  }
+//}
+
+.wide-tooltip > .tooltip-inner {
+  max-width: 50em;
+}
+
+.secret-more-info-accordion-header > button {
+  color: $primary;
+}
+
+.ignore-vuln-button:hover {
+  color:red;
+}
+
+.vuln-table-item.open {
+  background-color: $primary;
+  color: $white;
+}
+
+.vuln-table-item.ignored {
+  background-color: $gray-300;
+}
+
+.package-trees {
+  font-size: 1.2em;
+}
+
+.primary-color {
+  color: $primary;
+}
+
+.one-point-two-em {
+  font-size: 1.2em;
+}
+
+.package-update-popover {
+  max-width: min( 98vw, 400px);
+}
+
+.all-packages-update-popover {
+  max-width: min(98vw, 700px);
+}
